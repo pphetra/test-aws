@@ -12,6 +12,7 @@ import {
   ScalingMinCapacity,
   ScalingSecondsUtilAutoPause
 } from './config';
+import {CfnDBCluster} from "@aws-cdk/aws-rds";
 
 type DatabaseProps = {
   vpc: ec2.Vpc
@@ -20,6 +21,7 @@ type DatabaseProps = {
 export class Database extends cdk.Stack {
   public readonly dbSG: ec2.SecurityGroup;
   public readonly  dbClusterArn: string;
+  public readonly db: CfnDBCluster;
 
   constructor(scope: cdk.App, id: string, props: DatabaseProps) {
     super(scope, id, props);
@@ -44,7 +46,7 @@ export class Database extends cdk.Stack {
       subnetIds: vpc.publicSubnets.map(sub => sub.subnetId)
     });
 
-    const db = new rds.CfnDBCluster(
+    this.db = new rds.CfnDBCluster(
       this, 'RDS',
       {
         databaseName: DbName,
@@ -73,7 +75,7 @@ export class Database extends cdk.Stack {
       sep: ':',
       // NOTE: resourceName should be lower case for RDS
       // however arn is evaluated in case sensitive.
-      resourceName: (db.dbClusterIdentifier || '').toString().toLowerCase()
+      resourceName: (this.db.dbClusterIdentifier || '').toString().toLowerCase()
     });
   }
 }
